@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  /* Hazard-tape accent — used sparingly against neutral greys. */
+  --color-hazard-50: #fffbeb;
+  --color-hazard-100: #fef3c7;
+  --color-hazard-200: #fde68a;
+  --color-hazard-400: #f5c518;
+  --color-hazard-500: #e0ad00;
+  --color-hazard-600: #b88a00;
+
+  --color-ink-700: #2a2f38;
+  --color-ink-800: #1b1f26;
+  --color-ink-900: #12151a;
+  --color-ink-950: #0b0d11;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-slate-100 text-slate-800 font-sans;
+  }
+  /* Recharts injects focusable wrappers; keep focus rings tidy. */
+  .recharts-wrapper:focus,
+  .recharts-surface:focus {
+    outline: none;
+  }
+}
+
+@layer components {
+  /* Caution-tape motif: 45° yellow/black stripes. */
+  .hazard-stripe {
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--color-hazard-400) 0 10px,
+      var(--color-ink-900) 10px 20px
+    );
+  }
+  .card {
+    @apply bg-white rounded-lg border border-slate-200 shadow-sm;
+  }
+  .card-header {
+    @apply flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200;
+  }
+  .card-title {
+    @apply text-sm font-semibold text-slate-900 tracking-tight;
+  }
+  .th {
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500;
+  }
+  .td {
+    @apply px-4 py-3 text-sm text-slate-700 align-middle;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-hazard-500 focus-visible:ring-offset-2;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-hazard-500 focus-visible:ring-offset-2
+           bg-ink-900 text-white hover:bg-ink-700;
+  }
+  .btn-accent {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-hazard-500 focus-visible:ring-offset-2
+           bg-hazard-400 text-ink-900 hover:bg-hazard-500;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-hazard-500 focus-visible:ring-offset-2
+           border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+  .input {
+    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800
+           placeholder:text-slate-400 focus:border-hazard-500 focus:outline-none focus:ring-1 focus:ring-hazard-500;
+  }
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5;
+  }
+}
