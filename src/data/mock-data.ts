@@ -39,6 +39,10 @@ export interface Zone {
   level: string
   /** Current pour / work package status. */
   stage: 'Complete' | 'In progress' | 'Scheduled'
+  /** Short name used in alert headlines, e.g. "Level 3 Pour A". */
+  shortName?: string
+  /** Next scheduled pour (ISO date), quoted in shortfall alerts. */
+  nextPourDate?: string
 }
 
 export interface ReconciliationItem {
@@ -59,6 +63,13 @@ export interface ReconciliationItem {
   /** Drawing revision the requirement came from. */
   designRevision: string
   reconciled: boolean
+  /** Name used in alert headlines when the bare item code is ambiguous. */
+  label?: string
+  /**
+   * Site context for the current revision, worked into derived alert text.
+   * Cleared when a new design revision is issued.
+   */
+  alertNotes?: { revision?: string; review?: string }
 }
 
 export interface Delivery {
@@ -111,11 +122,11 @@ export const project: Project = {
 }
 
 export const zones: Zone[] = [
-  { id: 'Z-B2', code: 'B2', name: 'Basement B2 — Core Walls', level: 'Basement 2', stage: 'Complete' },
-  { id: 'Z-L1', code: 'L1', name: 'Podium Level 1 — Slab', level: 'Level 1', stage: 'Complete' },
-  { id: 'Z-L3', code: 'L3-A', name: 'Level 3 — Slab Pour A', level: 'Level 3', stage: 'In progress' },
-  { id: 'Z-L5', code: 'L5-B', name: 'Level 5 — Slab Pour B', level: 'Level 5', stage: 'In progress' },
-  { id: 'Z-CR', code: 'CORE', name: 'Lift Core — L1 to L6', level: 'Core', stage: 'Scheduled' },
+  { id: 'Z-B2', code: 'B2', name: 'Basement B2 — Core Walls', level: 'Basement 2', stage: 'Complete', shortName: 'Basement B2' },
+  { id: 'Z-L1', code: 'L1', name: 'Podium Level 1 — Slab', level: 'Level 1', stage: 'Complete', shortName: 'Podium Level 1' },
+  { id: 'Z-L3', code: 'L3-A', name: 'Level 3 — Slab Pour A', level: 'Level 3', stage: 'In progress', shortName: 'Level 3 Pour A' },
+  { id: 'Z-L5', code: 'L5-B', name: 'Level 5 — Slab Pour B', level: 'Level 5', stage: 'In progress', shortName: 'Level 5 Pour B', nextPourDate: '2026-09-30' },
+  { id: 'Z-CR', code: 'CORE', name: 'Lift Core — L1 to L6', level: 'Core', stage: 'Scheduled', shortName: 'Lift Core' },
 ]
 
 export const reconciliationItems: ReconciliationItem[] = [
@@ -148,6 +159,7 @@ export const reconciliationItems: ReconciliationItem[] = [
     description: 'N12 trimmer bar — slab pour A',
     estimatedT: 18.6, orderedT: 23.4, installedT: 17.9, requiredT: 17.9,
     designRevision: 'Rev F', reconciled: false,
+    alertNotes: { revision: 'reduced trimmer bar spacing' },
   },
   {
     id: 'RC-006', zoneId: 'Z-L3', itemCode: 'N24', materialType: 'Bar',
@@ -178,6 +190,8 @@ export const reconciliationItems: ReconciliationItem[] = [
     description: 'N20 ligatures — lift core',
     estimatedT: 14.2, orderedT: 15.9, installedT: 11.8, requiredT: 13.8,
     designRevision: 'Rev A', reconciled: false,
+    label: 'N20 ligatures',
+    alertNotes: { review: 'Confirm ligature schedule against Rev A before releasing the next core order.' },
   },
 ]
 

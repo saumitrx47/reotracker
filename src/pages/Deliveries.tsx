@@ -6,12 +6,13 @@ import DeliveriesTable from '../components/DeliveriesTable'
 import AddDeliveryModal from '../components/AddDeliveryModal'
 import Loading from '../components/Loading'
 import GatedButton from '../components/GatedButton'
-import { useDeliveries, useZones } from '../hooks/useProjectData'
+import { useCommands, useDeliveries, useZones } from '../hooks/useProjectData'
 import { tonnes } from '../lib/format'
 
 export default function Deliveries() {
   const { data: deliveries, loading: deliveriesLoading } = useDeliveries()
   const { data: zones, loading: zonesLoading } = useZones()
+  const { createDelivery, documentDelivery } = useCommands()
 
   const [query, setQuery] = useState('')
   const [zoneId, setZoneId] = useState('all')
@@ -70,9 +71,9 @@ export default function Deliveries() {
         resultCount={filtered.length}
       />
 
-      <DeliveriesTable deliveries={filtered} zones={zones} />
+      <DeliveriesTable deliveries={filtered} zones={zones} onDocument={documentDelivery} />
 
-      <AddDeliveryModal open={modalOpen} onClose={() => setModalOpen(false)} zones={zones} />
+      <AddDeliveryModal open={modalOpen} onClose={() => setModalOpen(false)} zones={zones} onSubmit={createDelivery} />
     </>
   )
 }

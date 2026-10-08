@@ -6,11 +6,19 @@ import {
   getProject,
   getReconciliationItems,
   getZones,
+  createDelivery,
+  decideChangeRequest,
+  documentDelivery,
+  issueDesignRevision,
+  markNotificationsRead,
   markReconciled,
+  raiseChangeRequest,
+  recordInstalled,
   resetDemo,
   switchUser,
 } from '../data/api'
-import { useStore, type DemoState } from '../data/store'
+import { useStore, type ChangeRequest, type DeliveryDraft, type DemoState } from '../data/store'
+import type { RoleId } from '../data/users'
 import { can, type Permission } from '../lib/permissions'
 
 export interface AsyncState<T> {
@@ -88,6 +96,15 @@ export function useCommands() {
   return useMemo(
     () => ({
       markReconciled: (itemId: string, reconciled: boolean) => markReconciled(dispatch, itemId, reconciled),
+      createDelivery: (draft: DeliveryDraft) => createDelivery(dispatch, draft),
+      recordInstalled: (itemId: string, installedT: number) => recordInstalled(dispatch, itemId, installedT),
+      issueDesignRevision: (itemId: string, requiredT: number, revision: string) =>
+        issueDesignRevision(dispatch, itemId, requiredT, revision),
+      raiseChangeRequest: (request: Pick<ChangeRequest, 'type' | 'fromItemId' | 'toItemId' | 'quantityT'>) =>
+        raiseChangeRequest(dispatch, request),
+      decideChangeRequest: (requestId: string, approve: boolean) => decideChangeRequest(dispatch, requestId, approve),
+      documentDelivery: (deliveryId: string) => documentDelivery(dispatch, deliveryId),
+      markNotificationsRead: (role: RoleId) => markNotificationsRead(dispatch, role),
       switchUser: (userId: string) => switchUser(dispatch, userId),
       resetDemo: () => resetDemo(dispatch),
     }),

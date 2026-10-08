@@ -2,14 +2,16 @@ import { useMemo } from 'react'
 import { FileCheck2, FileWarning } from 'lucide-react'
 import type { Delivery, Zone } from '../data/mock-data'
 import StatusPill from './StatusPill'
+import GatedButton from './GatedButton'
 import { shortDate, tonnes } from '../lib/format'
 
 interface Props {
   deliveries: Delivery[]
   zones: Zone[]
+  onDocument: (deliveryId: string) => void
 }
 
-export default function DeliveriesTable({ deliveries, zones }: Props) {
+export default function DeliveriesTable({ deliveries, zones, onDocument }: Props) {
   const zoneNames = useMemo(() => new Map(zones.map((z) => [z.id, z.name])), [zones])
   const zoneName = (id: string) => zoneNames.get(id) ?? id
 
@@ -54,7 +56,18 @@ export default function DeliveriesTable({ deliveries, zones }: Props) {
                   )}
                 </td>
                 <td className="td">
-                  <StatusPill status={delivery.status} />
+                  <div className="flex items-center gap-2">
+                    <StatusPill status={delivery.status} />
+                    {delivery.status === 'Pending' && (
+                      <GatedButton
+                        permission="documentDelivery"
+                        onClick={() => onDocument(delivery.id)}
+                        className="whitespace-nowrap rounded-md border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                      >
+                        {delivery.acrsCertified ? 'Mark documented' : 'Attach certificate'}
+                      </GatedButton>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

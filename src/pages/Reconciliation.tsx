@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { FileSpreadsheet } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import ReconciliationTable from '../components/ReconciliationTable'
 import Loading from '../components/Loading'
 import GatedButton from '../components/GatedButton'
+import QuantityModal, { type QuantityMode } from '../components/QuantityModal'
 import { exportRegisterCsv } from '../lib/export'
 import { useCommands, useProject, useReconciliationItems, useZones } from '../hooks/useProjectData'
 import { groupByZone, severityFor, totalsFor, variancePct } from '../lib/variance'
@@ -13,7 +14,8 @@ export default function Reconciliation() {
   const { data: project } = useProject()
   const { data: zones } = useZones()
   const { data: items, loading } = useReconciliationItems()
-  const { markReconciled } = useCommands()
+  const { markReconciled, recordInstalled, issueDesignRevision } = useCommands()
+  const [editing, setEditing] = useState<{ mode: QuantityMode; itemId: string } | null>(null)
   const byZone = useMemo(() => groupByZone(items ?? []), [items])
 
   if (loading || !zones || !project || !items || items.length === 0) {
@@ -30,6 +32,7 @@ export default function Reconciliation() {
     (i) => severityFor(variancePct(i), project.varianceTolerancePct, project.varianceCriticalPct) !== 'ok',
   ).length
   const reconciledCount = items.filter((i) => i.reconciled).length
+  const editingItem = editing ? (items.find((i) => i.id === editing.itemId) ?? null) : null
 
   return (
     <>
@@ -74,8 +77,22 @@ export default function Reconciliation() {
           items={byZone.get(zone.id) ?? []}
           project={project}
           onToggleReconciled={markReconciled}
+          onUpdateInstalled={(item) => setEditing({ mode: 'installed', itemId: item.id })}
+          onReviseDesign={(item) => setEditing({ mode: 'revision', itemId: item.id })}
         />
       ))}
+
+      {editing && editingItem && (
+        <QuantityModal
+          key={`${editing.mode}:${editingItem.id}`}
+          mode={editing.mode}
+          item={editingItem}
+          zoneName={zones.find((z) => z.id === editingItem.zoneId)?.name ?? ''}
+          onClose={() => setEditing(null)}
+          onInstalled={recordInstalled}
+          onRevision={issueDesignRevision}
+        />
+      )}
     </>
   )
 }

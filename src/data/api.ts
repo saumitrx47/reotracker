@@ -14,7 +14,8 @@
  */
 import type { Dispatch } from 'react'
 import { alerts, forecast, type Alert, type ForecastPoint } from './mock-data'
-import type { DemoState, Meta, StoreAction } from './store'
+import type { ChangeRequest, DeliveryDraft, DemoState, Meta, StoreAction } from './store'
+import type { RoleId } from './users'
 
 export type StoreDispatch = Dispatch<StoreAction>
 
@@ -54,4 +55,43 @@ export async function resetDemo(dispatch: StoreDispatch): Promise<void> {
 
 export async function markReconciled(dispatch: StoreDispatch, itemId: string, reconciled: boolean): Promise<void> {
   dispatch({ type: 'setReconciled', meta: meta('ACT'), itemId, reconciled })
+}
+
+/** Records a docket. A PO not yet on file for the zone + item adds to its ordered quantity. */
+export async function createDelivery(dispatch: StoreDispatch, draft: DeliveryDraft): Promise<void> {
+  dispatch({ type: 'recordDelivery', meta: meta('ACT'), draft })
+}
+
+export async function recordInstalled(dispatch: StoreDispatch, itemId: string, installedT: number): Promise<void> {
+  dispatch({ type: 'setInstalled', meta: meta('ACT'), itemId, installedT })
+}
+
+/** New requirement + drawing revision; the line item drops back to unreconciled. */
+export async function issueDesignRevision(
+  dispatch: StoreDispatch,
+  itemId: string,
+  requiredT: number,
+  revision: string,
+): Promise<void> {
+  dispatch({ type: 'issueRevision', meta: meta('ACT'), itemId, requiredT, revision })
+}
+
+export async function raiseChangeRequest(
+  dispatch: StoreDispatch,
+  request: Pick<ChangeRequest, 'type' | 'fromItemId' | 'toItemId' | 'quantityT'>,
+): Promise<void> {
+  dispatch({ type: 'raiseRequest', meta: meta('ACT'), request })
+}
+
+export async function decideChangeRequest(dispatch: StoreDispatch, requestId: string, approve: boolean): Promise<void> {
+  dispatch({ type: 'decideRequest', meta: meta('ACT'), requestId, approve })
+}
+
+/** Files the ACRS certificate and closes the docket out as Documented. */
+export async function documentDelivery(dispatch: StoreDispatch, deliveryId: string): Promise<void> {
+  dispatch({ type: 'documentDelivery', meta: meta('ACT'), deliveryId })
+}
+
+export async function markNotificationsRead(dispatch: StoreDispatch, role: RoleId): Promise<void> {
+  dispatch({ type: 'markRead', role })
 }

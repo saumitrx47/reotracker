@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react'
+import { Check, FilePen, PencilLine } from 'lucide-react'
 import type { Project, ReconciliationItem, Zone } from '../data/mock-data'
 import SeverityBadge from './SeverityBadge'
 import GatedButton from './GatedButton'
@@ -10,9 +10,13 @@ interface Props {
   items: ReconciliationItem[]
   project: Project
   onToggleReconciled: (itemId: string, next: boolean) => void
+  onUpdateInstalled: (item: ReconciliationItem) => void
+  onReviseDesign: (item: ReconciliationItem) => void
 }
 
-export default function ReconciliationTable({ zone, items, project, onToggleReconciled }: Props) {
+const ICON_BTN = 'rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+
+export default function ReconciliationTable({ zone, items, project, onToggleReconciled, onUpdateInstalled, onReviseDesign }: Props) {
   const totals = totalsFor(items)
   const { varianceTolerancePct: tol, varianceCriticalPct: crit } = project
   const zoneSeverity = severityFor(totals.variancePct, tol, crit)
@@ -82,24 +86,44 @@ export default function ReconciliationTable({ zone, items, project, onToggleReco
                     <SeverityBadge severity={severity}>{statusLabel(pct, tol, crit)}</SeverityBadge>
                   </td>
                   <td className="td text-right">
-                    {item.reconciled ? (
+                    <div className="inline-flex items-center gap-1">
                       <GatedButton
-                        permission="reconcile"
-                        onClick={() => onToggleReconciled(item.id, false)}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100"
+                        permission="recordInstalled"
+                        className={ICON_BTN}
+                        title="Update installed quantity"
+                        aria-label={`Update installed quantity for ${item.itemCode}`}
+                        onClick={() => onUpdateInstalled(item)}
                       >
-                        <Check size={13} aria-hidden />
-                        Reconciled
+                        <PencilLine size={14} aria-hidden />
                       </GatedButton>
-                    ) : (
                       <GatedButton
-                        permission="reconcile"
-                        onClick={() => onToggleReconciled(item.id, true)}
-                        className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                        permission="issueRevision"
+                        className={`${ICON_BTN} mr-1`}
+                        title="Issue design revision"
+                        aria-label={`Issue design revision for ${item.itemCode}`}
+                        onClick={() => onReviseDesign(item)}
                       >
-                        Mark as reconciled
+                        <FilePen size={14} aria-hidden />
                       </GatedButton>
-                    )}
+                      {item.reconciled ? (
+                        <GatedButton
+                          permission="reconcile"
+                          onClick={() => onToggleReconciled(item.id, false)}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100"
+                        >
+                          <Check size={13} aria-hidden />
+                          Reconciled
+                        </GatedButton>
+                      ) : (
+                        <GatedButton
+                          permission="reconcile"
+                          onClick={() => onToggleReconciled(item.id, true)}
+                          className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                        >
+                          Mark as reconciled
+                        </GatedButton>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )
