@@ -16,6 +16,7 @@ import { DEFAULT_USER_ID, USERS, roleLabel, userById, type DemoUser, type RoleId
 import { can, type Permission } from '../lib/permissions'
 import { REQUEST_LABELS, describeRequest, itemRef, touchesItem } from '../lib/requests'
 import { fmtT, round2 } from '../lib/validation'
+import { deriveAlerts, type DerivedAlert } from '../lib/alerts'
 
 export interface Notification {
   id: string
@@ -90,8 +91,29 @@ export function seedShared(): SharedState {
     notifications: [],
     activityLog: [],
     changeRequests: [],
-    alertFirstSeen: {},
+    alertFirstSeen: seedFirstSeen(),
   })
+}
+
+/**
+ * The seed's hardcoded alerts become the first-seen times of the matching
+ * derived alerts, so the default dashboard shows the same "raised" stamps.
+ */
+const SEED_ALERT_KEYS: Record<string, string> = {
+  'AL-01': 'var:RC-005:over',
+  'AL-02': 'var:RC-007:short',
+  'AL-03': 'var:RC-010:over',
+  'AL-04': 'cert:DKT-2291',
+  'AL-05': 'ok:RC-002',
+}
+
+function seedFirstSeen(): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const a of seed.alerts) {
+    const key = SEED_ALERT_KEYS[a.id]
+    if (key) out[key] = a.raisedAt
+  }
+  return out
 }
 
 function isSharedState(value: unknown): value is SharedState {
@@ -452,6 +474,7 @@ interface StoreValue {
   currentUser: DemoUser
   itemsById: Map<string, ReconciliationItem>
   zonesById: Map<string, Zone>
+  alerts: DerivedAlert[]
 }
 
 const StoreContext = createContext<StoreValue | null>(null)
@@ -510,9 +533,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const zonesById = useMemo(() => new Map(zones.map((z) => [z.id, z])), [zones])
   const currentUser = userById(state.currentUserId)
 
+  const alerts = useMemo(
+    () => deriveAlerts(project, zones, reconciliationItems, deliveries, changeRequests, alertFirstSeen),
+    [project, zones, reconciliationItems, deliveries, changeRequests, alertFirstSeen],
+  )
+
+  // Remember when each alert was first raised; forget alerts that have cleared.
+  useEffect(() => {
+    const add: Record<string, string> = {}
+    for (const a of alerts) if (!(a.id in alertFirstSeen)) add[a.id] = a.raisedAt
+    const active = new Set(alerts.map((a) => a.id))
+    const remove = Object.keys(alertFirstSeen).filter((k) => !active.has(k))
+    if (Object.keys(add).length || remove.length) dispatch({ type: 'syncAlertFirstSeen', add, remove })
+  }, [alerts, alertFirstSeen])
+
   const value = useMemo(
-    () => ({ state, dispatch, currentUser, itemsById, zonesById }),
-    [state, currentUser, itemsById, zonesById],
+    () => ({ state, dispatch, currentUser, itemsById, zonesById, alerts }),
+    [state, currentUser, itemsById, zonesById, alerts],
   )
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

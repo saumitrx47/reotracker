@@ -86,7 +86,7 @@ export default function Dashboard() {
           <VarianceChart rollups={rollups} />
         </div>
         <div className="xl:col-span-2">
-          <AlertsPanel alerts={alerts} zones={zones} />
+          <AlertsPanel alerts={alerts} zones={zones} tolerancePct={tolerance} />
         </div>
       </div>
     </>

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  getAlerts,
   getDeliveries,
   getForecast,
   getProject,
@@ -20,6 +19,7 @@ import {
 import { useStore, type ChangeRequest, type DeliveryDraft, type DemoState } from '../data/store'
 import type { RoleId } from '../data/users'
 import { can, type Permission } from '../lib/permissions'
+import type { DerivedAlert } from '../lib/alerts'
 
 export interface AsyncState<T> {
   data: T | null
@@ -79,10 +79,20 @@ export const useProject = () => useResource(getProject)
 export const useZones = () => useResource(getZones)
 export const useReconciliationItems = () => useResource(getReconciliationItems)
 export const useDeliveries = () => useResource(getDeliveries)
-export const useAlerts = () => useResource(getAlerts)
+/** Discrepancy alerts, derived from live data once in the store provider (see `lib/alerts.ts`). */
+export function useAlerts(): AsyncState<DerivedAlert[]> {
+  const { alerts } = useStore()
+  return useMemo(() => ({ data: alerts, loading: false, error: null, reload: noop }), [alerts])
+}
 export const useForecast = () => useAsync(getForecast, [])
 
 export const useCurrentUser = () => useStore().currentUser
+
+/** id → record maps for O(1) lookups in render loops. */
+export function useLookups() {
+  const { itemsById, zonesById } = useStore()
+  return useMemo(() => ({ itemsById, zonesById }), [itemsById, zonesById])
+}
 
 /** `can(action)` for the account this tab is signed in as. */
 export function useCan() {

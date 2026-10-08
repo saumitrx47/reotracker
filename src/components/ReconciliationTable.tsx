@@ -14,7 +14,8 @@ interface Props {
   onReviseDesign: (item: ReconciliationItem) => void
 }
 
-const ICON_BTN = 'rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+/** Inline edit icon beside a value; sized to sit inside the existing column width. */
+const ICON_BTN = 'mr-1.5 inline-flex rounded p-0.5 align-[-1px] text-slate-400 hover:bg-slate-100 hover:text-slate-700'
 
 export default function ReconciliationTable({ zone, items, project, onToggleReconciled, onUpdateInstalled, onReviseDesign }: Props) {
   const totals = totalsFor(items)
@@ -73,8 +74,30 @@ export default function ReconciliationTable({ zone, items, project, onToggleReco
                   </td>
                   <td className="td text-right tabular-nums text-slate-600">{tonnes(item.estimatedT)}</td>
                   <td className="td text-right tabular-nums font-medium">{tonnes(item.orderedT)}</td>
-                  <td className="td text-right tabular-nums text-slate-600">{tonnes(item.installedT)}</td>
-                  <td className="td text-right tabular-nums font-medium">{tonnes(item.requiredT)}</td>
+                  <td className="td text-right tabular-nums text-slate-600">
+                    <GatedButton
+                      permission="recordInstalled"
+                      className={ICON_BTN}
+                      title="Update installed quantity"
+                      aria-label={`Update installed quantity for ${item.itemCode}`}
+                      onClick={() => onUpdateInstalled(item)}
+                    >
+                      <PencilLine size={12} aria-hidden />
+                    </GatedButton>
+                    {tonnes(item.installedT)}
+                  </td>
+                  <td className="td text-right tabular-nums font-medium">
+                    <GatedButton
+                      permission="issueRevision"
+                      className={ICON_BTN}
+                      title="Issue design revision"
+                      aria-label={`Issue design revision for ${item.itemCode}`}
+                      onClick={() => onReviseDesign(item)}
+                    >
+                      <FilePen size={12} aria-hidden />
+                    </GatedButton>
+                    {tonnes(item.requiredT)}
+                  </td>
                   <td className="td text-right tabular-nums">
                     <div className="font-semibold text-slate-900">{percent(pct)}</div>
                     <div className="text-[11px] text-slate-500">
@@ -86,44 +109,24 @@ export default function ReconciliationTable({ zone, items, project, onToggleReco
                     <SeverityBadge severity={severity}>{statusLabel(pct, tol, crit)}</SeverityBadge>
                   </td>
                   <td className="td text-right">
-                    <div className="inline-flex items-center gap-1">
+                    {item.reconciled ? (
                       <GatedButton
-                        permission="recordInstalled"
-                        className={ICON_BTN}
-                        title="Update installed quantity"
-                        aria-label={`Update installed quantity for ${item.itemCode}`}
-                        onClick={() => onUpdateInstalled(item)}
+                        permission="reconcile"
+                        onClick={() => onToggleReconciled(item.id, false)}
+                        className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100"
                       >
-                        <PencilLine size={14} aria-hidden />
+                        <Check size={13} aria-hidden />
+                        Reconciled
                       </GatedButton>
+                    ) : (
                       <GatedButton
-                        permission="issueRevision"
-                        className={`${ICON_BTN} mr-1`}
-                        title="Issue design revision"
-                        aria-label={`Issue design revision for ${item.itemCode}`}
-                        onClick={() => onReviseDesign(item)}
+                        permission="reconcile"
+                        onClick={() => onToggleReconciled(item.id, true)}
+                        className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                       >
-                        <FilePen size={14} aria-hidden />
+                        Mark as reconciled
                       </GatedButton>
-                      {item.reconciled ? (
-                        <GatedButton
-                          permission="reconcile"
-                          onClick={() => onToggleReconciled(item.id, false)}
-                          className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100"
-                        >
-                          <Check size={13} aria-hidden />
-                          Reconciled
-                        </GatedButton>
-                      ) : (
-                        <GatedButton
-                          permission="reconcile"
-                          onClick={() => onToggleReconciled(item.id, true)}
-                          className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-                        >
-                          Mark as reconciled
-                        </GatedButton>
-                      )}
-                    </div>
+                    )}
                   </td>
                 </tr>
               )

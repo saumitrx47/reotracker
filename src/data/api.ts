@@ -13,7 +13,7 @@
  *   }
  */
 import type { Dispatch } from 'react'
-import { alerts, forecast, type Alert, type ForecastPoint } from './mock-data'
+import { forecast, type ForecastPoint } from './mock-data'
 import type { ChangeRequest, DeliveryDraft, DemoState, Meta, StoreAction } from './store'
 import type { RoleId } from './users'
 
@@ -25,8 +25,6 @@ export const getProject = (s: DemoState) => s.project
 export const getZones = (s: DemoState) => s.zones
 export const getReconciliationItems = (s: DemoState) => s.reconciliationItems
 export const getDeliveries = (s: DemoState) => s.deliveries
-/** Static until alerts are derived from live data (Stage 4). */
-export const getAlerts = (): Alert[] => alerts
 
 /** Stand-in for network latency so the forecast's loading state is exercised. */
 const LATENCY_MS = 180

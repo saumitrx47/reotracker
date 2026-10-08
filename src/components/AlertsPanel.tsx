@@ -1,7 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, ChevronRight, CircleAlert } from 'lucide-react'
-import type { Alert, Severity, Zone } from '../data/mock-data'
+import type { Severity, Zone } from '../data/mock-data'
+import type { DerivedAlert } from '../lib/alerts'
 import SeverityBadge from './SeverityBadge'
+import GatedButton from './GatedButton'
+import ChangeRequestRow from './ChangeRequestRow'
+import RequestModal from './RequestModal'
 import { dateTime } from '../lib/format'
 
 const ICONS: Record<Severity, typeof AlertTriangle> = {
@@ -23,11 +27,14 @@ const ICON_TINT: Record<Severity, string> = {
 }
 
 interface Props {
-  alerts: Alert[]
+  alerts: DerivedAlert[]
   zones: Zone[]
+  /** The project's reconciliation tolerance (%), quoted in the subtitle. */
+  tolerancePct: number
 }
 
-export default function AlertsPanel({ alerts, zones }: Props) {
+export default function AlertsPanel({ alerts, zones, tolerancePct }: Props) {
+  const [raising, setRaising] = useState<DerivedAlert | null>(null)
   const zoneNames = useMemo(() => new Map(zones.map((z) => [z.id, z.name])), [zones])
   const zoneName = (id: string) => zoneNames.get(id) ?? id
   const openCount = alerts.filter((a) => a.severity !== 'ok').length
@@ -37,7 +44,10 @@ export default function AlertsPanel({ alerts, zones }: Props) {
       <div className="card-header">
         <div>
           <h3 className="card-title">Discrepancy alerts</h3>
-          <p className="mt-0.5 text-xs text-slate-500">{openCount} items outside the 5% reconciliation tolerance</p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {openCount}
+            {` items outside the ${tolerancePct}% reconciliation tolerance`}
+          </p>
         </div>
         <button type="button" className="text-xs font-medium text-slate-500 hover:text-slate-800">
           View all
@@ -48,7 +58,7 @@ export default function AlertsPanel({ alerts, zones }: Props) {
         {alerts.map((alert) => {
           const Icon = ICONS[alert.severity]
           return (
-            <li key={alert.id} className={`border-l-4 ${RAIL[alert.severity]} px-5 py-4`}>
+            <li key={alert.id} className={`group border-l-4 ${RAIL[alert.severity]} px-5 py-4`}>
               <div className="flex items-start gap-3">
                 <Icon size={17} className={`mt-0.5 shrink-0 ${ICON_TINT[alert.severity]}`} aria-hidden />
                 <div className="min-w-0 flex-1">
@@ -63,8 +73,25 @@ export default function AlertsPanel({ alerts, zones }: Props) {
                       <span className="font-semibold">Recommended:</span> {alert.recommendation}
                     </span>
                   </p>
-                  <p className="mt-2 text-[11px] text-slate-400">
+                  {alert.pendingRequest && (
+                    <div className="mt-2">
+                      <ChangeRequestRow request={alert.pendingRequest} />
+                    </div>
+                  )}
+                  <p className="relative mt-2 text-[11px] text-slate-400">
                     {zoneName(alert.zoneId)} · {alert.itemCode} · raised {dateTime(alert.raisedAt)}
+                    {alert.options.length > 0 && !alert.pendingRequest && (
+                      // Revealed on hover / keyboard focus so the resting card is unchanged.
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 bg-white pl-2 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                        <GatedButton
+                          permission="raiseRequest"
+                          onClick={() => setRaising(alert)}
+                          className="rounded font-medium text-hazard-600 hover:text-ink-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-hazard-500"
+                        >
+                          Raise request →
+                        </GatedButton>
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -72,6 +99,8 @@ export default function AlertsPanel({ alerts, zones }: Props) {
           )
         })}
       </ul>
+
+      {raising && <RequestModal key={raising.id} alert={raising} onClose={() => setRaising(null)} />}
     </section>
   )
 }
