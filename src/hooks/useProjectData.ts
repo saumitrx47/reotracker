@@ -100,6 +100,31 @@ export function useCan() {
   return useCallback((action: Permission) => can(user, action), [user])
 }
 
+const newestFirst = <T extends { at: string }>(a: T, b: T) => Date.parse(b.at) - Date.parse(a.at)
+
+/** Notifications addressed to the current user's role, newest first, with the unread count. */
+export function useNotifications() {
+  const { state, currentUser } = useStore()
+  const { notifications } = state
+  const role = currentUser.role
+  return useMemo(() => {
+    const mine = notifications.filter((n) => n.toRoles.includes(role)).sort(newestFirst)
+    const unread = mine.reduce((count, n) => count + (n.readBy.includes(role) ? 0 : 1), 0)
+    return { notifications: mine, unread, role }
+  }, [notifications, role])
+}
+
+/** Audit trail, newest first. */
+export function useActivityLog() {
+  const { activityLog } = useStore().state
+  return useMemo(() => [...activityLog].sort(newestFirst), [activityLog])
+}
+
+export function usePendingRequests() {
+  const { changeRequests } = useStore().state
+  return useMemo(() => changeRequests.filter((cr) => cr.status === 'Pending'), [changeRequests])
+}
+
 /** Write commands bound to the store. */
 export function useCommands() {
   const { dispatch } = useStore()

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { Check, ChevronDown, RotateCcw } from 'lucide-react'
+import { Check, ChevronDown, History, RotateCcw } from 'lucide-react'
 import { USERS, roleLabel } from '../data/users'
 import { useCommands, useCurrentUser } from '../hooks/useProjectData'
 import { useDismiss } from '../hooks/useDismiss'
@@ -12,7 +12,7 @@ const ITEM = 'flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-sl
  * The top-bar avatar button plus its account dropdown. The button's markup is
  * unchanged from the original stub; only its text follows the current user.
  */
-export default function UserMenu() {
+export default function UserMenu({ onOpenActivity }: { onOpenActivity: () => void }) {
   const user = useCurrentUser()
   const { switchUser, resetDemo } = useCommands()
   const [open, setOpen] = useState(false)
@@ -131,6 +131,19 @@ export default function UserMenu() {
           })}
 
           <div className="my-1 border-t border-slate-200" role="separator" />
+
+          <button
+            type="button"
+            role="menuitem"
+            className={ITEM}
+            onClick={() => {
+              close(false)
+              onOpenActivity()
+            }}
+          >
+            <History size={15} className="text-slate-400" aria-hidden />
+            Activity log
+          </button>
 
           {confirmReset ? (
             <div className="px-4 py-2.5">

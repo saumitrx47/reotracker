@@ -1,10 +1,14 @@
-import { Bell, RefreshCw } from 'lucide-react'
+import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { useProject } from '../hooks/useProjectData'
 import { dateTime } from '../lib/format'
 import UserMenu from './UserMenu'
+import NotificationsPopover from './NotificationsPopover'
+import ActivityLogModal from './ActivityLogModal'
 
 export default function TopBar() {
   const { data: project } = useProject()
+  const [activityOpen, setActivityOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
@@ -26,14 +30,12 @@ export default function TopBar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <button type="button" className="relative rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700" aria-label="Notifications">
-            <Bell size={18} />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" aria-hidden />
-          </button>
+          <NotificationsPopover onOpenActivity={() => setActivityOpen(true)} />
           <div className="h-6 w-px bg-slate-200" aria-hidden />
-          <UserMenu />
+          <UserMenu onOpenActivity={() => setActivityOpen(true)} />
         </div>
       </div>
+      <ActivityLogModal open={activityOpen} onClose={() => setActivityOpen(false)} />
     </header>
   )
 }

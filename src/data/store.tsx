@@ -88,12 +88,37 @@ export function seedShared(): SharedState {
     zones: seed.zones,
     reconciliationItems: seed.reconciliationItems,
     deliveries: seed.deliveries,
-    notifications: [],
-    activityLog: [],
+    notifications: SEED_NOTIFICATIONS,
+    activityLog: SEED_ACTIVITY,
     changeRequests: [],
     alertFirstSeen: seedFirstSeen(),
   })
 }
+
+/** One unread item for the QS so the bell's red dot shows on first load, as on the poster. */
+const SEED_NOTIFICATIONS: Notification[] = [
+  {
+    id: 'N-SEED-1',
+    at: '2026-09-19T08:05:00+10:00',
+    toRoles: ['qs', 'proc'],
+    fromUserId: 'U-TR',
+    text: 'recorded DKT-2318: 12.4 t N12 to L3-A on PO-4471 (certificate outstanding)',
+    readBy: [],
+  },
+]
+
+const SEED_ACTIVITY: ActivityEntry[] = [
+  {
+    id: 'ACT-SEED-1',
+    at: '2026-09-19T08:05:00+10:00',
+    userId: 'U-TR',
+    role: 'Site Engineer',
+    action: 'Recorded delivery',
+    target: 'DKT-2318 · L3-A N12',
+    before: '—',
+    after: '12.4 t on PO-4471 · cert outstanding',
+  },
+]
 
 /**
  * The seed's hardcoded alerts become the first-seen times of the matching
