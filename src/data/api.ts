@@ -42,6 +42,16 @@ function meta(prefix: string): Meta {
   return { id: `${prefix}-${Date.now().toString(36)}${seq.toString(36)}`, at: new Date().toISOString() }
 }
 
+/** Demo-only: change which account this tab acts as. */
+export async function switchUser(dispatch: StoreDispatch, userId: string): Promise<void> {
+  dispatch({ type: 'switchUser', userId })
+}
+
+/** Demo-only: restore the seed data for every user and tab. */
+export async function resetDemo(dispatch: StoreDispatch): Promise<void> {
+  dispatch({ type: 'reset' })
+}
+
 export async function markReconciled(dispatch: StoreDispatch, itemId: string, reconciled: boolean): Promise<void> {
   dispatch({ type: 'setReconciled', meta: meta('ACT'), itemId, reconciled })
 }

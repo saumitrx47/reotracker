@@ -1,6 +1,7 @@
-import { Bell, ChevronDown, RefreshCw } from 'lucide-react'
+import { Bell, RefreshCw } from 'lucide-react'
 import { useProject } from '../hooks/useProjectData'
 import { dateTime } from '../lib/format'
+import UserMenu from './UserMenu'
 
 export default function TopBar() {
   const { data: project } = useProject()
@@ -30,16 +31,7 @@ export default function TopBar() {
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" aria-hidden />
           </button>
           <div className="h-6 w-px bg-slate-200" aria-hidden />
-          <button type="button" className="flex items-center gap-2.5 rounded-md py-1 pl-1 pr-2 hover:bg-slate-100">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-900 text-xs font-semibold text-hazard-400">
-              {project?.user.initials ?? 'PN'}
-            </span>
-            <span className="hidden text-left leading-tight sm:block">
-              <span className="block text-sm font-medium text-slate-800">{project?.user.name ?? 'Priya Naidu'}</span>
-              <span className="block text-[11px] text-slate-500">{project?.user.role ?? 'Quantity Surveyor'}</span>
-            </span>
-            <ChevronDown size={14} className="text-slate-400" aria-hidden />
-          </button>
+          <UserMenu />
         </div>
       </div>
     </header>

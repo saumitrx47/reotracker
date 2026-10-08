@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react'
 import type { Project, ReconciliationItem, Zone } from '../data/mock-data'
 import SeverityBadge from './SeverityBadge'
+import GatedButton from './GatedButton'
 import { percent, tonnes } from '../lib/format'
 import { severityFor, statusLabel, totalsFor, variancePct, varianceT } from '../lib/variance'
 
@@ -82,22 +83,22 @@ export default function ReconciliationTable({ zone, items, project, onToggleReco
                   </td>
                   <td className="td text-right">
                     {item.reconciled ? (
-                      <button
-                        type="button"
+                      <GatedButton
+                        permission="reconcile"
                         onClick={() => onToggleReconciled(item.id, false)}
                         className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100"
                       >
                         <Check size={13} aria-hidden />
                         Reconciled
-                      </button>
+                      </GatedButton>
                     ) : (
-                      <button
-                        type="button"
+                      <GatedButton
+                        permission="reconcile"
                         onClick={() => onToggleReconciled(item.id, true)}
                         className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                       >
                         Mark as reconciled
-                      </button>
+                      </GatedButton>
                     )}
                   </td>
                 </tr>

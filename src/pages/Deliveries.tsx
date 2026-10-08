@@ -5,6 +5,7 @@ import FilterBar from '../components/FilterBar'
 import DeliveriesTable from '../components/DeliveriesTable'
 import AddDeliveryModal from '../components/AddDeliveryModal'
 import Loading from '../components/Loading'
+import GatedButton from '../components/GatedButton'
 import { useDeliveries, useZones } from '../hooks/useProjectData'
 import { tonnes } from '../lib/format'
 
@@ -51,10 +52,10 @@ export default function Deliveries() {
         title="Deliveries log"
         subtitle={`${deliveries.length} dockets received · ${pending} awaiting documentation · ${tonnes(totalT)} shown`}
         actions={
-          <button type="button" className="btn-accent" onClick={() => setModalOpen(true)}>
+          <GatedButton permission="recordDelivery" className="btn-accent" onClick={() => setModalOpen(true)}>
             <Plus size={16} aria-hidden />
             Add delivery
-          </button>
+          </GatedButton>
         }
       />
 

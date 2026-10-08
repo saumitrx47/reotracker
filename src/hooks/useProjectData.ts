@@ -7,8 +7,11 @@ import {
   getReconciliationItems,
   getZones,
   markReconciled,
+  resetDemo,
+  switchUser,
 } from '../data/api'
 import { useStore, type DemoState } from '../data/store'
+import { can, type Permission } from '../lib/permissions'
 
 export interface AsyncState<T> {
   data: T | null
@@ -71,12 +74,22 @@ export const useDeliveries = () => useResource(getDeliveries)
 export const useAlerts = () => useResource(getAlerts)
 export const useForecast = () => useAsync(getForecast, [])
 
+export const useCurrentUser = () => useStore().currentUser
+
+/** `can(action)` for the account this tab is signed in as. */
+export function useCan() {
+  const user = useCurrentUser()
+  return useCallback((action: Permission) => can(user, action), [user])
+}
+
 /** Write commands bound to the store. */
 export function useCommands() {
   const { dispatch } = useStore()
   return useMemo(
     () => ({
       markReconciled: (itemId: string, reconciled: boolean) => markReconciled(dispatch, itemId, reconciled),
+      switchUser: (userId: string) => switchUser(dispatch, userId),
+      resetDemo: () => resetDemo(dispatch),
     }),
     [dispatch],
   )

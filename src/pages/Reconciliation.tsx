@@ -3,6 +3,8 @@ import { FileSpreadsheet } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import ReconciliationTable from '../components/ReconciliationTable'
 import Loading from '../components/Loading'
+import GatedButton from '../components/GatedButton'
+import { exportRegisterCsv } from '../lib/export'
 import { useCommands, useProject, useReconciliationItems, useZones } from '../hooks/useProjectData'
 import { groupByZone, severityFor, totalsFor, variancePct } from '../lib/variance'
 import { percent, tonnes } from '../lib/format'
@@ -35,10 +37,14 @@ export default function Reconciliation() {
         title="Reconciliation"
         subtitle={`${items.length} line items · ${flagged} outside the ${project.varianceTolerancePct}% tolerance · ${reconciledCount} signed off`}
         actions={
-          <button type="button" className="btn-ghost">
+          <GatedButton
+            permission="exportRegister"
+            className="btn-ghost"
+            onClick={() => exportRegisterCsv(project, zones, items)}
+          >
             <FileSpreadsheet size={15} aria-hidden />
             Export register
-          </button>
+          </GatedButton>
         }
       />
 
