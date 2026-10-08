@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   getAlerts,
   getDeliveries,
@@ -6,7 +6,9 @@ import {
   getProject,
   getReconciliationItems,
   getZones,
+  markReconciled,
 } from '../data/api'
+import { useStore, type DemoState } from '../data/store'
 
 export interface AsyncState<T> {
   data: T | null
@@ -51,9 +53,31 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []): Asy
   return { data, loading, error, reload: () => setNonce((n) => n + 1) }
 }
 
-export const useProject = () => useAsync(getProject, [])
-export const useZones = () => useAsync(getZones, [])
-export const useReconciliationItems = () => useAsync(getReconciliationItems, [])
-export const useDeliveries = () => useAsync(getDeliveries, [])
-export const useAlerts = () => useAsync(getAlerts, [])
+const noop = () => {}
+
+/**
+ * Store-backed resource with the same shape as `useAsync`, so views keep their
+ * loading/error branches for when the store is fed by a real network call.
+ */
+function useResource<T>(select: (s: DemoState) => T): AsyncState<T> {
+  const data = select(useStore().state)
+  return useMemo(() => ({ data, loading: false, error: null, reload: noop }), [data])
+}
+
+export const useProject = () => useResource(getProject)
+export const useZones = () => useResource(getZones)
+export const useReconciliationItems = () => useResource(getReconciliationItems)
+export const useDeliveries = () => useResource(getDeliveries)
+export const useAlerts = () => useResource(getAlerts)
 export const useForecast = () => useAsync(getForecast, [])
+
+/** Write commands bound to the store. */
+export function useCommands() {
+  const { dispatch } = useStore()
+  return useMemo(
+    () => ({
+      markReconciled: (itemId: string, reconciled: boolean) => markReconciled(dispatch, itemId, reconciled),
+    }),
+    [dispatch],
+  )
+}

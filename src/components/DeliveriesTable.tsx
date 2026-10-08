@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { FileCheck2, FileWarning } from 'lucide-react'
 import type { Delivery, Zone } from '../data/mock-data'
 import StatusPill from './StatusPill'
@@ -9,7 +10,8 @@ interface Props {
 }
 
 export default function DeliveriesTable({ deliveries, zones }: Props) {
-  const zoneName = (id: string) => zones.find((z) => z.id === id)?.name ?? id
+  const zoneNames = useMemo(() => new Map(zones.map((z) => [z.id, z.name])), [zones])
+  const zoneName = (id: string) => zoneNames.get(id) ?? id
 
   return (
     <div className="card overflow-hidden">

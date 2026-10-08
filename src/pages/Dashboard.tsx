@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Download, HardHat, Package, ShoppingCart, TrendingUp } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import SummaryCard from '../components/SummaryCard'
@@ -15,6 +16,10 @@ export default function Dashboard() {
   const { data: alerts, loading: alertsLoading } = useAlerts()
   const { data: deliveries, loading: deliveriesLoading } = useDeliveries()
 
+  const totals = useMemo(() => totalsFor(items ?? []), [items])
+  const rollups = useMemo(() => rollupByZone(zones ?? [], items ?? []), [zones, items])
+  const poCount = useMemo(() => new Set((deliveries ?? []).map((d) => d.poNumber)).size, [deliveries])
+
   const loading = zonesLoading || itemsLoading || alertsLoading || deliveriesLoading
   if (loading || !zones || !items || !alerts || !deliveries) {
     return (
@@ -25,12 +30,9 @@ export default function Dashboard() {
     )
   }
 
-  const totals = totalsFor(items)
-  const rollups = rollupByZone(zones, items)
   const tolerance = project?.varianceTolerancePct ?? 5
   const critical = project?.varianceCriticalPct ?? 15
   const surplusT = totals.orderedT - totals.requiredT
-  const poCount = new Set(deliveries.map((d) => d.poNumber)).size
   const varianceAccent =
     Math.abs(totals.variancePct) >= critical ? 'critical' : Math.abs(totals.variancePct) > tolerance ? 'warning' : 'good'
 

@@ -1,55 +1,47 @@
 /**
  * Data access layer.
  *
- * Every view talks to the app through these functions, never to `mock-data.ts`
- * directly. Swapping the stub for a real backend is therefore a change to this
- * one file — replace each body with a `fetch` returning the same shape, e.g.
+ * Every view talks to the app through this module, never to `mock-data.ts` or
+ * the store internals directly. Reads are selectors over the shared store
+ * snapshot; writes are async commands that dispatch to it. Swapping the demo
+ * for a real backend is therefore a change to this one file — e.g.
  *
- *   export async function getDeliveries(): Promise<Delivery[]> {
- *     const res = await fetch(`${API_BASE}/projects/${projectId}/deliveries`)
- *     if (!res.ok) throw new Error(`Deliveries request failed: ${res.status}`)
- *     return res.json()
+ *   export async function markReconciled(dispatch, itemId, reconciled) {
+ *     const res = await fetch(`${API_BASE}/items/${itemId}`, { method: 'PATCH', body: … })
+ *     if (!res.ok) throw new Error(`Reconcile failed: ${res.status}`)
+ *     dispatch({ type: 'hydrate', shared: await res.json() })
  *   }
  */
-import {
-  alerts,
-  deliveries,
-  forecast,
-  project,
-  reconciliationItems,
-  zones,
-  type Alert,
-  type Delivery,
-  type ForecastPoint,
-  type Project,
-  type ReconciliationItem,
-  type Zone,
-} from './mock-data'
+import type { Dispatch } from 'react'
+import { alerts, forecast, type Alert, type ForecastPoint } from './mock-data'
+import type { DemoState, Meta, StoreAction } from './store'
 
-/** Stand-in for network latency so loading states are exercised in the demo. */
+export type StoreDispatch = Dispatch<StoreAction>
+
+// --- Reads ------------------------------------------------------------------
+
+export const getProject = (s: DemoState) => s.project
+export const getZones = (s: DemoState) => s.zones
+export const getReconciliationItems = (s: DemoState) => s.reconciliationItems
+export const getDeliveries = (s: DemoState) => s.deliveries
+/** Static until alerts are derived from live data (Stage 4). */
+export const getAlerts = (): Alert[] => alerts
+
+/** Stand-in for network latency so the forecast's loading state is exercised. */
 const LATENCY_MS = 180
 
-function resolve<T>(value: T): Promise<T> {
-  return new Promise((done) => setTimeout(() => done(structuredClone(value)), LATENCY_MS))
+/** The forecast is a fixed model in this demo and stays an async fetch. */
+export const getForecast = (): Promise<ForecastPoint[]> =>
+  new Promise((done) => setTimeout(() => done(structuredClone(forecast)), LATENCY_MS))
+
+// --- Writes -----------------------------------------------------------------
+
+let seq = 0
+function meta(prefix: string): Meta {
+  seq += 1
+  return { id: `${prefix}-${Date.now().toString(36)}${seq.toString(36)}`, at: new Date().toISOString() }
 }
 
-export const getProject = (): Promise<Project> => resolve(project)
-export const getZones = (): Promise<Zone[]> => resolve(zones)
-export const getReconciliationItems = (): Promise<ReconciliationItem[]> => resolve(reconciliationItems)
-export const getDeliveries = (): Promise<Delivery[]> => resolve(deliveries)
-export const getAlerts = (): Promise<Alert[]> => resolve(alerts)
-export const getForecast = (): Promise<ForecastPoint[]> => resolve(forecast)
-
-/**
- * Stub write. A real implementation would POST and return the persisted record;
- * here the caller keeps the result in local state only.
- */
-export async function markReconciled(itemId: string, reconciled: boolean): Promise<{ id: string; reconciled: boolean }> {
-  await resolve(null)
-  return { id: itemId, reconciled }
-}
-
-export async function createDelivery(draft: Omit<Delivery, 'id'>): Promise<Delivery> {
-  await resolve(null)
-  return { ...draft, id: `DKT-${Math.floor(2400 + Math.random() * 99)}` }
+export async function markReconciled(dispatch: StoreDispatch, itemId: string, reconciled: boolean): Promise<void> {
+  dispatch({ type: 'setReconciled', meta: meta('ACT'), itemId, reconciled })
 }

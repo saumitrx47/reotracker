@@ -1,31 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { FileSpreadsheet } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import ReconciliationTable from '../components/ReconciliationTable'
 import Loading from '../components/Loading'
-import { useProject, useReconciliationItems, useZones } from '../hooks/useProjectData'
-import { markReconciled } from '../data/api'
-import type { ReconciliationItem } from '../data/mock-data'
-import { severityFor, totalsFor, variancePct } from '../lib/variance'
+import { useCommands, useProject, useReconciliationItems, useZones } from '../hooks/useProjectData'
+import { groupByZone, severityFor, totalsFor, variancePct } from '../lib/variance'
 import { percent, tonnes } from '../lib/format'
 
 export default function Reconciliation() {
   const { data: project } = useProject()
   const { data: zones } = useZones()
-  const { data: loadedItems, loading } = useReconciliationItems()
+  const { data: items, loading } = useReconciliationItems()
+  const { markReconciled } = useCommands()
+  const byZone = useMemo(() => groupByZone(items ?? []), [items])
 
-  // Local working copy — "Mark as reconciled" updates state only in this stub.
-  const [items, setItems] = useState<ReconciliationItem[]>([])
-  useEffect(() => {
-    if (loadedItems) setItems(loadedItems)
-  }, [loadedItems])
-
-  async function handleToggle(itemId: string, next: boolean) {
-    setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, reconciled: next } : i)))
-    await markReconciled(itemId, next) // no-op stub; swap for a real PATCH
-  }
-
-  if (loading || !zones || !project || items.length === 0) {
+  if (loading || !zones || !project || !items || items.length === 0) {
     return (
       <>
         <PageHeader title="Reconciliation" subtitle="Estimated vs ordered vs installed, line by line" />
@@ -76,9 +65,9 @@ export default function Reconciliation() {
         <ReconciliationTable
           key={zone.id}
           zone={zone}
-          items={items.filter((i) => i.zoneId === zone.id)}
+          items={byZone.get(zone.id) ?? []}
           project={project}
-          onToggleReconciled={handleToggle}
+          onToggleReconciled={markReconciled}
         />
       ))}
     </>

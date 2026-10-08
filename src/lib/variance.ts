@@ -52,9 +52,21 @@ export interface ZoneRollup extends Totals {
   items: ReconciliationItem[]
 }
 
+/** Groups items by zone in a single pass (zone order follows `zones`). */
+export function groupByZone(items: ReconciliationItem[]): Map<string, ReconciliationItem[]> {
+  const groups = new Map<string, ReconciliationItem[]>()
+  for (const item of items) {
+    const group = groups.get(item.zoneId)
+    if (group) group.push(item)
+    else groups.set(item.zoneId, [item])
+  }
+  return groups
+}
+
 export function rollupByZone(zones: Zone[], items: ReconciliationItem[]): ZoneRollup[] {
+  const groups = groupByZone(items)
   return zones.map((zone) => {
-    const zoneItems = items.filter((i) => i.zoneId === zone.id)
+    const zoneItems = groups.get(zone.id) ?? []
     return { zone, items: zoneItems, ...totalsFor(zoneItems) }
   })
 }

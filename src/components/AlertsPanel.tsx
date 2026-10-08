@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { AlertTriangle, CheckCircle2, ChevronRight, CircleAlert } from 'lucide-react'
 import type { Alert, Severity, Zone } from '../data/mock-data'
 import SeverityBadge from './SeverityBadge'
@@ -27,7 +28,8 @@ interface Props {
 }
 
 export default function AlertsPanel({ alerts, zones }: Props) {
-  const zoneName = (id: string) => zones.find((z) => z.id === id)?.name ?? id
+  const zoneNames = useMemo(() => new Map(zones.map((z) => [z.id, z.name])), [zones])
+  const zoneName = (id: string) => zoneNames.get(id) ?? id
   const openCount = alerts.filter((a) => a.severity !== 'ok').length
 
   return (
