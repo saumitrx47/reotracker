@@ -1,5 +1,5 @@
 /**
- * ReoTracker — single source of mock data.
+ * MatTrak — single source of mock data.
  *
  * Everything in the UI is derived from this file. To swap in a real backend,
  * leave these types alone and replace the accessors in `src/data/api.ts` with

@@ -76,7 +76,7 @@ export interface DemoState extends SharedState {
   currentUserId: string
 }
 
-export const STORAGE_KEY = 'reotracker-demo-v1'
+export const STORAGE_KEY = 'mattrak-demo-v1'
 const USER_KEY = `${STORAGE_KEY}:user`
 
 // ---------------------------------------------------------------------------

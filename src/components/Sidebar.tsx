@@ -14,8 +14,10 @@ export default function Sidebar() {
       <div className="flex items-center gap-3 px-5 py-5">
         <div className="hazard-stripe h-9 w-9 shrink-0 rounded-md" aria-hidden />
         <div className="leading-tight">
-          <div className="text-base font-bold tracking-tight text-white">ReoTracker</div>
-          <div className="text-[11px] uppercase tracking-widest text-hazard-400">Material control</div>
+          <div className="text-base font-bold tracking-tight text-white">
+            Mat<span className="text-[#E8762D]">Trak</span>
+          </div>
+          <div className="text-[11px] uppercase tracking-widest text-hazard-400">Reinforcing steel</div>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-# ReoTracker — demo stub
+# MatTrak — demo stub
 
 Central material tracking and forecasting dashboard for reinforcing steel, built
 for the ENGG3112 Tutorial 12 concept (client: Richard Crookes Constructions).

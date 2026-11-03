@@ -16,7 +16,7 @@ export default function TopBar() {
       <div className="flex items-center justify-between gap-4 px-6 py-3.5 lg:px-8">
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold tracking-tight text-slate-900">
-            ReoTracker Demo — {project?.name ?? 'Project Site 12'}
+            MatTrak Demo — {project?.name ?? 'Project Site 12'}
           </h1>
           <p className="truncate text-xs text-slate-500">
             {project ? `${project.client} · ${project.location}` : 'Loading project…'}
